@@ -24,7 +24,7 @@ The following types of metrics are available:
 
 - [Counter](https://prometheus.io/docs/concepts/metric_types/#counter): a cumulative metric that represents a single monotonically increasing counter. The value increases by default. You can reset the value to zero or restart your cluster.
 - [Gauge](https://prometheus.io/docs/concepts/metric_types/#gauge): a metric that represents a single numerical value that can arbitrarily go up and down.
-- [Histogram](https://prometheus.io/docs/concepts/metric_types/#histogram): a histogram samples observations (usually things like request durations or response sizes) and counts them in configurable buckets.
+- [Histogram](https://prometheus.io/docs/concepts/metric_types/#histogram): a histogram samples observations (usually things like request durations or response sizes) and counts them in configurable buckets. The `_bucket` suffix is the number of observations within a histogram bucket, configured with parameter `{le="<upper inclusive bound>"}`.The `_count` suffix is the number of observations, shown as a time series and behaves like a counter. The `_sum` suffix is the sum of observed values, also shown as a time series and behaves like a counter. These suffixes are denoted by `_*` in this doc.
 - [Summary](https://prometheus.io/docs/concepts/metric_types/#summary): similar to a histogram, a summary samples observations (usually things like request durations and response sizes). While it also provides a total count of observations and a sum of all observed values, it calculates configurable quantiles over a sliding time window.
 
 ## ZooKeeper
@@ -120,6 +120,7 @@ The following metrics are available for broker:
   - [Token metrics](#token-metrics)
   - [Authentication metrics](#authentication-metrics)
   - [Connection metrics](#connection-metrics)
+  - [Jetty metrics](#jetty-metrics)
 - [Pulsar Functions](#pulsar-functions)
 - [Proxy](#proxy)
 - [Pulsar SQL Worker](#pulsar-sql-worker)
@@ -436,6 +437,35 @@ All the connection metrics are labelled with the following labels:
 | pulsar_connection_closed_total_count | Gauge | The total number of closed connections. |
 | pulsar_broker_throttled_connections | Gauge | The number of throttled connections. |
 | pulsar_broker_throttled_connections_global_limit | Gauge | The number of throttled connections because of per-connection limit. |
+
+### Jetty metrics
+
+> For a functions-worker running separately from brokers, its Jetty metrics are only exposed when `includeStandardPrometheusMetrics` is set to `true`.
+
+All the jetty metrics are labelled with the following labels:
+
+- *cluster*: `cluster=${pulsar_cluster}`. `${pulsar_cluster}` is the cluster name that you have configured in the `broker.conf` file.
+
+| Name | Type | Description |
+|---|---|---|
+| jetty_requests_total | Counter | Number of requests. |
+| jetty_requests_active | Gauge | Number of requests currently active. |
+| jetty_requests_active_max | Gauge | Maximum number of requests that have been active at once. |
+| jetty_request_time_max_seconds | Gauge | Maximum time spent handling requests. |
+| jetty_request_time_seconds_total | Counter | Total time spent in all request handling. |
+| jetty_dispatched_total | Counter | Number of dispatches. |
+| jetty_dispatched_active | Gauge | Number of dispatches currently active. |
+| jetty_dispatched_active_max | Gauge | Maximum number of active dispatches being handled. |
+| jetty_dispatched_time_max | Gauge | Maximum time spent in dispatch handling. |
+| jetty_dispatched_time_seconds_total | Counter | Total time spent in dispatch handling. |
+| jetty_async_requests_total | Counter | Total number of async requests. |
+| jetty_async_requests_waiting | Gauge | Currently waiting async requests. |
+| jetty_async_requests_waiting_max | Gauge | Maximum number of waiting async requests. |
+| jetty_async_dispatches_total | Counter | Number of requested that have been asynchronously dispatched. |
+| jetty_expires_total | Counter | Number of async requests requests that have expired. |
+| jetty_responses_total | Counter | Number of responses, labeled by status code. The `code` label can be "1xx", "2xx", "3xx", "4xx", or "5xx". |
+| jetty_stats_seconds | Gauge | Time in seconds stats have been collected for. |
+| jetty_responses_bytes_total | Counter | Total number of bytes across all responses. |
 
 ## Pulsar Functions
 
